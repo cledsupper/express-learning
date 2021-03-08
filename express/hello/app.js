@@ -1,5 +1,5 @@
-var express = require('express');
-var app = express();
+var express = require('express')
+var app = express()
 
 // Posta arquivos do diretório 'public' na rota /media
 app.use('/media', express.static('public'))
@@ -17,5 +17,5 @@ var wiki = require('./wiki.js')
 app.use(wiki)
 
 app.listen(3000, function() {
-  console.log('App de Exemplo escutando na porta 3000!');
+  console.log('App de Exemplo escutando na porta 3000!')
 });
