@@ -1,0 +1,8 @@
+Os apps tipo 'hello world' foram criados com base nos guias presentes em:
+https://developer.mozilla.org/pt-BR/docs/Learn/Server-side
+
+Especificamente os projetos:
+./hello
+./locallib
+
+~ ledso
