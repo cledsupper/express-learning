@@ -6,9 +6,9 @@ router.get('/', function(req, res, next) {
   res.redirect('/catalog/');
 });
 
+/* Testar códigos */
 var indexController = require('../controllers/indexController')
 
-/* Testar códigos */
 router.get('/test', indexController.test_get);
 
 module.exports = router;
