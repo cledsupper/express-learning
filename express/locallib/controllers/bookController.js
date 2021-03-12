@@ -28,8 +28,13 @@ exports.index = function(req, res) {
     })
 }
 
-exports.book_list = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: book list')
+exports.book_list = function(req, res, next) {
+    Book.find({}, "title author")
+        .populate("author")
+        .exec(function(err, list_books) {
+            if (err) return next(err)
+            res.render('book_list', { title: 'Lista de livros', book_list: list_books })
+        })
 }
 
 exports.book_detail = function(req, res) {

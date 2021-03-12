@@ -10,9 +10,15 @@ var catalogRouter = require('./routes/catalog');
 
 var app = express();
 
-var mongoose = require('mongoose')
+// Conexão com o MongoDB Server
+var mongoose = require('mongoose');
+// Nota: defina/exporte a string de conexão 'srv_adress' em config/mongo.js
 var mongoConfig = require('./config/mongo')
-mongoose.connect(mongoConfig.srv_adress, {useNewUrlParser: true})
+mongoose.connect(mongoConfig.srv_adress, {useNewUrlParser: true, useUnifiedTopology: true});
+
+// Verificar erro de conexão
+mongoose.connection
+.on('error', console.error.bind(console, 'Erro de conexão MongoDB:'));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

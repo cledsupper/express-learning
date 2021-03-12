@@ -1,3 +1,5 @@
+// É preferível utilizar o handler de teste em indexController!
+
 var mongoose = require('mongoose')
 var mongoConfig = require('./config/mongo')
 
