@@ -10,6 +10,10 @@ var catalogRouter = require('./routes/catalog');
 
 var app = express();
 
+var mongoose = require('mongoose')
+var mongoConfig = require('./config/mongo')
+mongoose.connect(mongoConfig.srv_adress, {useNewUrlParser: true})
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
