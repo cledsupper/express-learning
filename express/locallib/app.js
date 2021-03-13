@@ -12,9 +12,9 @@ var app = express();
 
 // Conexão com o MongoDB Server
 var mongoose = require('mongoose');
-// Nota: defina/exporte a string de conexão 'srv_adress' em config/mongo.js
+// Nota: defina/exporte a string de conexão 'SRV_ADDRESS' em config/mongo.js
 var mongoConfig = require('./config/mongo')
-mongoose.connect(mongoConfig.srv_address, {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(mongoConfig.SRV_ADDRESS, {useNewUrlParser: true, useUnifiedTopology: true});
 
 // Verificar erro de conexão
 mongoose.connection
