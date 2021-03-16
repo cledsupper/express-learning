@@ -196,10 +196,10 @@ function createBookInstances(cb) {
           bookInstanceCreate(books[4], 'New York, NY Tom Doherty Associates, LLC, 2015.', false, 'Emprestado', callback)
         },
         function(callback) {
-          bookInstanceCreate(books[0], 'Imprint XXX2', false, false, callback)
+          bookInstanceCreate(books[0], 'Editora XXX2', false, false, callback)
         },
         function(callback) {
-          bookInstanceCreate(books[1], 'Imprint XXX3', false, false, callback)
+          bookInstanceCreate(books[1], 'Editora XXX3', false, false, callback)
         }
         ],
         // Optional callback
