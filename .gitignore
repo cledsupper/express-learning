@@ -1,2 +1,6 @@
+# Pacotes externos e arquivos privados
 node_modules/
 express/locallib/config/mongo.js
+
+# Arquivos do Syncthing
+.stignore
