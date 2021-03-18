@@ -14,8 +14,20 @@ exports.bookinstance_list = function(req, res, next) {
 };
 
 // Mostrar página de detalhe de um específico BookInstance.
-exports.bookinstance_detail = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: BookInstance detail: ' + req.params.id);
+exports.bookinstance_detail = function(req, res, next) {
+
+    BookInstance.findById(req.params.id)
+        .populate('book')
+        .exec(function(err, book_instance) {
+            if (err) return next(err);
+            if (book_instance == null) {
+                var err = new Error('Cópia não existe');
+                err.status = 404;
+                return next(err);
+            }
+            res.render('bookinstance_detail', { title: 'Cópia de: ' + book_instance.book.title, book_instance: book_instance});
+        });
+
 };
 
 // Mostrar formulário de criação de BookInstance via GET.
