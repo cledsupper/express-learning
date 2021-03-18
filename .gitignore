@@ -4,3 +4,4 @@ express/locallib/config/mongo.js
 
 # Arquivos do Syncthing
 .stignore
+.stfolder/
