@@ -1,7 +1,8 @@
 var Author = require('../models/author')
 var Book = require('../models/book')
+
 var async = require('async')
-const author = require('../models/author')
+const { body, validationResult } = require('express-validator')
 
 // Mostrar lista de autores
 exports.author_list = function(req, res, next) {
@@ -39,13 +40,45 @@ exports.author_detail = function(req, res, next) {
 
 }
 
-exports.author_create_get = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: Author create GET')
+exports.author_create_get = function(req, res, next) {
+    res.render('author_form', { title: 'Adicionar autor' })
 }
 
-exports.author_create_post = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: Author create POST')
-}
+exports.author_create_post = [
+    // Campos para validação e sanitização
+    body('first_name').trim().isLength({ min: 1 }).escape().withMessage('O primeiro nome deve ser especificado')
+        .isAlphanumeric().withMessage('O primeiro nome contém caracteres não alfanúmericos'),
+    body('family_name').trim().isLength({ min: 1 }).escape().withMessage('O nome de família deve ser especificado')
+    .isAlphanumeric().withMessage('O nome de família contém caracteres não alfanúmericos'),
+    body('date_of_birth', 'Data de nascimento inválida').optional({ checkFalsy: true }).isISO8601().toDate(),
+    body('date_of_death', 'Data de falecimento inválida').optional({ checkFalsy: true }).isISO8601().toDate(),
+
+    // Processar requisição após validação e sanitização
+    (req, res, next) => {
+        const errors = validationResult(req)
+
+        if (!errors.isEmpty()) {
+            // Existem erros. Então renderiza o formulário com os erros e valores sanitizados
+            res.render('author_form', { title: 'Adicionar autor', author: req.body, errors: errors.array() })
+            return
+        }
+        else {
+            // Os dados do formulário são válidos
+            // Cria um autor com os dados limpos
+            var author = new Author({
+                first_name: req.body.first_name,
+                family_name: req.body.family_name,
+                date_of_birth: req.body.date_of_birth,
+                date_of_death: req.body.date_of_death
+            })
+            author.save(function(err) {
+                if (err) return next(err)
+                // Com sucesso, retorna para a página do autor
+                res.redirect(author.url)
+            })
+        }
+    }
+]
 
 exports.author_delete_get = function(req, res) {
     res.send('NÃO IMPLEMENTADO: Author delete GET')
