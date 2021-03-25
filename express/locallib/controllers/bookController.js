@@ -2,6 +2,7 @@ var Book = require('../models/book')
 var Author = require('../models/author')
 var BookInstance = require('../models/bookInstance')
 var Genre = require('../models/genre')
+const { body, validationResult } = require('express-validator')
 
 var async = require('async')
 
@@ -62,13 +63,82 @@ exports.book_detail = function(req, res, next) {
 
 }
 
-exports.book_create_get = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: book create GET')
+exports.book_create_get = function(req, res, next) {
+    
+    async.parallel({
+        authors: function(callback) {
+            Author.find(callback)
+        },
+        genres: function(callback) {
+            Genre.find(callback)
+        }
+    }, function(err, results) {
+        if (err) return next(err)
+        res.render('book_form', { title: 'Adicionar livro', authors: results.authors, genres: results.genres })
+    })
 }
 
-exports.book_create_post = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: book create POST')
-}
+exports.book_create_post = [
+    // Converte os gêneros em um array
+    (req, res, next) => {
+        if (!(req.body.genre instanceof Array)) {
+            if (typeof req.body.genre === 'undefined')
+                req.body.genre = []
+            else
+                req.body.genre = new Array(req.body.genre)
+        }
+        next()
+    },
+
+    // validar e sanitizar campos
+    body('title', 'Título não pode estar em branco.').trim().isLength({ min: 1 }).escape(),
+    body('author', 'Autor não pode estar em branco.').trim().isLength({ min: 1 }).escape(),
+    body('summary', 'Descrição não pode estar em branco.').trim().isLength({ min: 1 }).escape(),
+    body('isbn', 'ISBN não pode estar em branco.').trim().isLength({ min: 1 }).escape(),
+    body('genre.*').escape(),
+
+    // processar requisição
+    (req, res, next) => {
+        const errors = validationResult(req)
+
+        // Cria o livro
+        var book = new Book({
+            title: req.body.title,
+            author: req.body.author,
+            summary: req.body.summary,
+            isbn: req.body.isbn,
+            genre: req.body.genre
+        })
+
+        if (!errors.isEmpty()) {
+            async.parallel({
+                authors: function(callback) {
+                    Author.find(callback)
+                },
+                genres: function(callback) {
+                    Genre.find(callback)
+                }
+            }, function(err, results) {
+                if (err) return next(err)
+
+                // Rechecar os gêneros
+                for (let i=0; i < results.genres.length; i++) {
+                    if (book.genre.indexOf(results.genres[i]._id) > -1) {
+                        results.genres[i].checked = 'true'
+                    }
+                }
+
+                res.render('book_form', { title: 'Adicionar livro', authors: results.authors, genres: results.genres, book: book, errors: errors.array() })
+            })
+        }
+        else {
+            book.save(function(err) {
+                if (err) return next(err)
+                res.redirect(book.url)
+            })
+        }
+    }
+]
 
 exports.book_update_get = function(req, res) {
     res.send('NÃO IMPLEMENTADO: book update GET')
