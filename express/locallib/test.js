@@ -6,7 +6,7 @@ var mongoConfig = require('./config/mongo')
 var Book = require('./models/book')
 
 // Conexão com o MongoDB Atlas
-mongoose.connect(mongoConfig.srv_address, {useNewUrlParser: true})
+mongoose.connect(mongoConfig.SRV_ADDRESS, {useNewUrlParser: true, useUnifiedTopology: true})
 Book.countDocuments({}, function (err, count) {
     console.log('Número de documentos: ' + count)
 })
