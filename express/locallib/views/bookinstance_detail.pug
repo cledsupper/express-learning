@@ -7,7 +7,7 @@ block content
     a(href=book_instance.book.url) #{book_instance.book.title}
   p #[strong Edição]: #{book_instance.imprint}
 
-  p #[strong Estado]: #{book_instance.status}
+  p #[strong Estado]: 
     if book_instance.status == 'Disponível'
       span.text-success #{book_instance.status}
     else if book_instance.status == 'Em manutenção'
