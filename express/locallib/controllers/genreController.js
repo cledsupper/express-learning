@@ -85,13 +85,46 @@ exports.genre_create_post = [
 ];
 
 // Mostrar formulário de remoção de Genre via GET.
-exports.genre_delete_get = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: Genre delete GET');
+exports.genre_delete_get = function(req, res, next) {
+    
+    async.parallel({
+        genre: function(callback) {
+            Genre.findById(req.params.id, callback)
+        },
+        books: function(callback) {
+            Book.find({ 'genre': req.params.id }, callback)
+        }
+    }, function(err, results) {
+        if (err) return next(err);
+        if (results.genre == null) {
+            res.redirect('/catalog/genres');
+        }
+        res.render('genre_delete', { title: 'Excluir gênero', genre: results.genre, books: results.books });
+    });
 };
 
 // Realizar deleção de Genre via POST.
 exports.genre_delete_post = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: Genre delete POST');
+    
+    async.parallel({
+        genre: function(callback) {
+            Genre.findById(req.body.genreid, callback)
+        },
+        books: function(callback) {
+            Book.find({ 'genre': req.body.genreid }, callback)
+        }
+    }, function(err, results) {
+        if (err) return next(err);
+        if (results.books.length > 0) {
+            res.render('genre_delete', { title: 'Excluir gênero', genre: results.genre, books: results.books });
+        }
+        else {
+            Genre.findByIdAndRemove(req.body.genreid, function(err) {
+                if (err) return next(err);
+                res.redirect('/catalog/genres');
+            });
+        }
+    });
 };
 
 // Mostrar atualização de Genre via GET.
