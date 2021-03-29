@@ -15,9 +15,6 @@ block content
           dt
             a(href=instance.url) #{instance._id}
           dd Editora: #{instance.imprint}
-          dd Estado: #{instance.status}
-          if instance.status != 'Disponível'
-            dd Data de retorno: #{instance.due_back_formatted}
   
   else
     p #[strong Você quer mesmo excluir o livro?]
