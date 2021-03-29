@@ -1,0 +1,28 @@
+extends layout
+
+block content
+  h1 #{title}: #{book.title}
+
+  if bookinstances.length
+    p #[strong Exclua as seguintes cópias antes de excluir o livro.]
+
+    div(style='margin-left: 20px; margin-top: 20px')
+
+      h4 Cópias
+
+      dl
+        each instance in bookinstances
+          dt
+            a(href=instance.url) #{instance._id}
+          dd Editora: #{instance.imprint}
+          dd Estado: #{instance.status}
+          if instance.status != 'Disponível'
+            dd Data de retorno: #{instance.due_back_formatted}
+  
+  else
+    p #[strong Você quer mesmo excluir o livro?]
+
+    form(method='POST' action='')
+      input(type='hidden' name='bookid' value=book._id required='true')
+
+      button.btn.btn-primary(type='submit') EXCLUIR

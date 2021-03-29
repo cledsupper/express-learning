@@ -236,10 +236,44 @@ exports.book_update_post = [
     }
 ]
 
-exports.book_delete_get = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: book delete GET')
+exports.book_delete_get = function(req, res, next) {
+
+    async.parallel({
+        book: function(callback) {
+            Book.findById(req.params.id, callback)
+        },
+        bookinstances: function(callback) {
+            BookInstance.find({ 'book': req.params.id }, callback)
+        }
+    }, function(err, results) {
+        if (err) return next(err)
+        if (results.book == null) {
+            res.redirect('/catalog/books')
+        }
+        else {
+            res.render('book_delete', { title: 'Excluir livro', book: results.book, bookinstances: results.bookinstances })
+        }
+    })
 }
 
-exports.book_delete_post = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: book delete POST')
+exports.book_delete_post = function(req, res, next) {
+
+    async.parallel({
+        book: function(callback) {
+            Book.findById(req.body.bookid, callback)
+        },
+        bookinstances: function(callback) {
+            BookInstance.find({ 'book': req.body.bookid }, callback)
+        }
+    }, function(err, results) {
+        if (err) return next(err)
+        if (results.bookinstances.length > 0) {
+            res.render('book_delete', { title: 'Excluir livro', book: results.book, bookinstances: results.bookinstances })
+        }
+        else {
+            Book.findByIdAndRemove(req.body.bookid, function(err) {
+                res.redirect('/catalog/books')
+            })
+        }
+    })
 }
