@@ -17,3 +17,11 @@ block content
 
   if book_instance.status != 'Disponível'
     p #[strong Retorno em]: #{book_instance.due_back_formatted}
+
+  hr
+  p
+    a(href=book_instance.url+'/update')
+      button.btn.btn-warning Atualizar cópia
+  p
+    a(href=book_instance.url+'/delete')
+      button.btn.btn-danger Excluir cópia
