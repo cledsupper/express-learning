@@ -30,6 +30,11 @@ block content
       p #[strong Id]: 
         a(href=val.url) #{val._id}
 
-
     else
       p Nenhuma cópia deste livro nesta biblioteca.
+
+    hr
+    p
+      a(href=book.url+'/delete') Excluir livro
+    p
+      a(href=book.url+'/update') Alterar livro

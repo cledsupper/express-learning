@@ -140,13 +140,101 @@ exports.book_create_post = [
     }
 ]
 
-exports.book_update_get = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: book update GET')
+exports.book_update_get = function(req, res, next) {
+
+    // Colocar livros, autores e gêneros no formulário
+    async.parallel({
+        book: function(callback) {
+            Book.findById(req.params.id).populate('author').populate('genre').exec(callback)
+        },
+        authors: function(callback) {
+            Author.find(callback)
+        },
+        genres: function(callback) {
+            Genre.find(callback)
+        }
+    }, function(err, results) {
+        if (err) return next(err)
+        if (results.book == null) {
+            var err = new Error('Livro não encontrado')
+            err.status = 404
+            return next(err)
+        }
+
+        for (let g=0; g < results.genres.length; g++) {
+            for (let bg=0; bg < results.book.genre.length; bg++) {
+                if (results.genres[g]._id.toString() === results.book.genre[bg]._id.toString()) {
+                    results.genres[g].checked = 'true'
+                }
+            }
+        }
+        res.render('book_form', { title: 'Atualizar livro', book: results.book, authors: results.authors, genres: results.genres })
+    })
+
 }
 
-exports.book_update_post = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: book update POST')
-}
+exports.book_update_post = [
+
+    // Converte o parâmetro de gênero em array
+    (req, res, next) => {
+        if (!(req.body.genre instanceof Array)) {
+            if (typeof req.body.genre === 'undefined')
+                req.body.genre = []
+            else
+                req.body.genre = new Array(req.body.genre)
+        }
+        next()
+    },
+
+    // Validação de dados
+    body('title', 'Título deve ser preenchido').trim().isLength({ min: 1 }).escape(),
+    body('author', 'Autor deve ser selecionado').trim().isLength({ min: 1 }).escape(),
+    body('summary', 'Descrição deve ser preeenchida').trim().isLength({ min: 1 }).escape(),
+    body('isbn', "ISBN deve ser preenchido").trim().isLength({ min: 1 }).escape(),
+    body('genre.*').escape(),
+
+    (req, res, next) => {
+
+        const errors = validationResult(req)
+
+        // Criar livro
+        var book = new Book({
+            title: req.body.title,
+            author: req.body.author,
+            summary: req.body.summary,
+            isbn: req.body.isbn,
+            genre: req.body.genre,
+            _id: req.params.id
+        })
+
+        if (!errors.isEmpty()) {
+            // Renderizar formulário novamente
+            async.parallel({
+                authors: function(callback) {
+                    Author.find(callback)
+                },
+                genres: function(callback) {
+                    Genre.find(callback)
+                }
+            }, function(err, results) {
+                if (err) return next(err)
+
+                for (let i=0; i < results.genres.length; i++) {
+                    if (book.genre.indexOf(results.genres[i]._id) > -1) {
+                        results.genres[i].checked = 'true'
+                    }
+                }
+                res.render('book_form', { title: 'Alterar livro', authors: results.authors, genres: results.genres, book: book, errors: errors.array() })
+            })
+        }
+        else {
+            Book.findByIdAndUpdate(req.params.id, book, {}, function(err, thebook) {
+                if (err) return next(err)
+                res.redirect(thebook.url)
+            })
+        }
+    }
+]
 
 exports.book_delete_get = function(req, res) {
     res.send('NÃO IMPLEMENTADO: book delete GET')
