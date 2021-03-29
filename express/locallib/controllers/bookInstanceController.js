@@ -82,13 +82,19 @@ exports.bookinstance_create_post = [
 ];
 
 // Mostrar formulário de remoção de BookInstance via GET.
-exports.bookinstance_delete_get = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: BookInstance delete GET');
+exports.bookinstance_delete_get = function(req, res, next) {
+    BookInstance.findById(req.params.id, function(err, bookinstance) {
+        if (err) return next(err);
+        res.render('bookinstance_delete', { title: 'Excluir cópia', bookinstance: bookinstance })
+    });
 };
 
 // Realizar remoção de BookInstance via POST.
-exports.bookinstance_delete_post = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: BookInstance delete POST');
+exports.bookinstance_delete_post = function(req, res, next) {
+    BookInstance.findByIdAndRemove(req.body.biid, function(err) {
+        if (err) return next(err);
+        res.redirect('/catalog/bookinstances')
+    });
 };
 
 // Mostrar formulário de atualização de BookInstance via GET.
