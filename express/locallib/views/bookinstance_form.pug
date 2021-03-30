@@ -20,17 +20,23 @@ block content
 
     div.form-group
       label(for='due_back') Data de retorno:
-      input#due_back.form-control(type='date' name='due_back' value=(undefined === bookinstance ? '' : bookinstance.due_back))
+      input#due_back.form-control(type='date' name='due_back' value=(undefined === bookinstance ? '' : bookinstance.due_back_yyyy_mm_dd))
 
     div.form-group
       label(for='status') Estado:
       select#status.form-control(type='select' placeholder='Estado da cópia' name='status' required='true')
-        option(value='Em manutenção') Em manutenção
-        option(value='Disponível') Disponível
-        option(value='Emprestado') Emprestado
-        option(value='Reservado') Reservado
+        if bookinstance
+          option(value='Em manutenção' selected=(bookinstance.status==='Em manutenção' ? 'selected' : false)) Em manutenção
+          option(value='Disponível' selected=(bookinstance.status==='Disponível' ? 'selected' : false)) Disponível
+          option(value='Emprestado' selected=(bookinstance.status==='Emprestado' ? 'selected' : false)) Emprestado
+          option(value='Reservado' selected=(bookinstance.status==='Reservado' ? 'selected' : false)) Reservado
+        else
+          option(value='Em manutenção') Em manutenção
+          option(value='Disponível') Disponível
+          option(value='Emprestado') Emprestado
+          option(value='Reservado') Reservado
 
-    button.btn.btn-primary(type='submit') Adicionar
+    button.btn.btn-primary(type='submit') Salvar
 
   if errors
     ul
