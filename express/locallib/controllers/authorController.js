@@ -123,10 +123,48 @@ exports.author_delete_post = function(req, res, next) {
 
 }
 
-exports.author_update_get = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: Author update GET')
+exports.author_update_get = function(req, res, next) {
+
+    Author.findById(req.params.id, function(err, author) {
+        if (err) return next(err)
+        if (!author) {
+            var err = new Error('Autor não encontrado')
+            err.status = 404
+            return next(err)
+        }
+        res.render('author_form', { title: 'Alterar dados de autor', author: author })
+    })
 }
 
-exports.author_update_post = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: Author update POST')
-}
+exports.author_update_post = [
+    // Validação dos dados
+    body('first_name').trim().isLength({ min: 1 }).escape().withMessage('O primeiro nome deve ser especificado')
+        .isAlphanumeric().withMessage('O primeiro nome contém caracteres não alfanuméricos'),
+    body('family_name').trim().isLength({ min: 1 }).escape().withMessage('O nome de família deve ser especificado')
+        .isAlphanumeric().withMessage('O nome de família contém caracteres não alfanuméricos'),
+    body('date_of_birth', 'Data de nascimento inválida').optional({ checkFalsy: true }).isISO8601().toDate(),
+    body('date_of_death', 'Data de falência inválida').optional({ checkFalsy: true }).isISO8601().toDate(),
+
+    (req, res, next) => {
+
+        const errors = validationResult(req)
+
+        var author = new Author({
+            first_name: req.body.first_name,
+            family_name: req.body.family_name,
+            date_of_birth: req.body.date_of_birth,
+            date_of_death: req.body.date_of_death,
+            _id: req.params.id
+        })
+
+        if (!errors.isEmpty()) {
+            res.render('author_form', { title: 'Alterar dados de autor', author: author, errors: errors.array() })
+        }
+        else {
+            Author.findByIdAndUpdate(req.params.id, author, {}, function(err, theauthor) {
+                if (err) return next(err)
+                res.redirect(theauthor.url)
+            })
+        }
+    }
+]
