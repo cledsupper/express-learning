@@ -1,6 +1,8 @@
 var BookInstance = require('../models/bookInstance');
 var Book = require('../models/book');
 
+var async = require('async');
+
 const { body, validationResult } = require('express-validator');
 
 // Mostrar lista de BookInstances.
@@ -50,8 +52,8 @@ exports.bookinstance_create_post = [
     // Validar e sanitizar campos
     body('book', 'Livro deve ser especificado.').trim().isLength({ min: 1 }).escape(),
     body('imprint', 'Editora deve ser especificada.').trim().isLength({ min: 1 }).escape(),
-    body('status', 'O estado da cópia deve ser especificado.').escape(),
-    body('due_back', 'A data de retorno está incorreta').optional({ checkFalsy: true }).isISO8601().toDate(),
+    body('status', 'Estado da cópia deve ser especificado.').escape(),
+    body('due_back', 'Data de retorno incorreta').optional({ checkFalsy: true }).isISO8601().toDate(),
 
     (req, res, next) => {
 
@@ -85,7 +87,7 @@ exports.bookinstance_create_post = [
 exports.bookinstance_delete_get = function(req, res, next) {
     BookInstance.findById(req.params.id, function(err, bookinstance) {
         if (err) return next(err);
-        res.render('bookinstance_delete', { title: 'Excluir cópia', bookinstance: bookinstance })
+        res.render('bookinstance_delete', { title: 'Excluir cópia', bookinstance: bookinstance });
     });
 };
 
@@ -93,16 +95,75 @@ exports.bookinstance_delete_get = function(req, res, next) {
 exports.bookinstance_delete_post = function(req, res, next) {
     BookInstance.findByIdAndRemove(req.body.biid, function(err) {
         if (err) return next(err);
-        res.redirect('/catalog/bookinstances')
+        res.redirect('/catalog/bookinstances');
     });
 };
 
 // Mostrar formulário de atualização de BookInstance via GET.
-exports.bookinstance_update_get = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: BookInstance update GET');
+exports.bookinstance_update_get = function(req, res, next) {
+
+    async.parallel({
+        bookInstance: function(callback) {
+            BookInstance.findById(req.params.id)
+                .populate('book')
+                .exec(callback);
+        },
+        books: function(callback) {
+            Book.find({}, 'title')
+                .exec(callback);
+        }
+    }, function(err, results) {
+        if (err) return next(err);
+        if (!results.bookInstance) {
+            var err = new Error('Cópia não existe');
+            err.status = 404;
+            return next(err);
+        }
+        res.render('bookinstance_form', { title: 'Atualizar cópia', bookinstance: results.bookInstance, book_list: results.books });
+    });
 };
 
 // Realizar atualização de BookInstance via POST.
-exports.bookinstance_update_post = function(req, res) {
-    res.send('NÃO IMPLEMENTADO: BookInstance update POST');
-};
+exports.bookinstance_update_post = [
+    // Validação dos dados
+    body('book', 'Livro deve ser especificado').trim().isLength({ min: 1 }).escape(),
+    body('imprint', 'Editora deve ser especificada').trim().isLength({ min: 1 }).escape(),
+    body('status', 'Estado da cópia deve ser especificado').escape(),
+    body('due_back', 'Data de retorno incorreta').optional({ checkFalsy: true }).isISO8601().toDate(),
+
+    (req, res, next) => {
+
+         const errors = validationResult(req);
+
+         var bi = new BookInstance({
+             book: req.body.book,
+             imprint: req.body.imprint,
+             status: req.body.status,
+             due_back: req.body.due_back,
+             _id: req.params.id
+         });
+
+         if (!errors.isEmpty()) {
+             async.parallel({
+                 bookInstance: function(callback) {
+                     BookInstance.findById(req.params.id)
+                         .populate('book')
+                         .exec(callback);
+                 },
+                 books: function(callback) {
+                     Book.find({}, 'title')
+                         .exec(callback);
+                 }
+             }, function(err, results) {
+                 if (err) return next(err);
+                 res.render('bookinstance_form', { title: 'Atualizar cópia', bookinstance: results.bookInstance, book_list: books, errors: errors.array() });
+             });
+         }
+         else {
+             BookInstance.findByIdAndUpdate(req.params.id, bi, {}, function(err, thebi) {
+                 if (err) return next(err);
+                 res.redirect(thebi.url);
+             });
+         }
+    }
+]
