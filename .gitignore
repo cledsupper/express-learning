@@ -1,5 +1,6 @@
 # Pacotes externos e arquivos privados
 node_modules/
+package-lock.json
 express/locallib/config/mongo.js
 
 # Arquivos do Syncthing
