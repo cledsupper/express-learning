@@ -7,7 +7,7 @@ const app = express()
  * POST  - CRIAR
  * PUT - ALTERAR
  * DELETE - REMOVER
- * SET - ALTERAR UMA INFORMAÇÃO
+ * PATCH - ALTERAR UMA INFORMAÇÃO
  */
 
 app.get("/", (request, response) => {
@@ -16,7 +16,7 @@ app.get("/", (request, response) => {
     })
 })
 
-app.post("/users", (request, response) => {
+app.post("/", (request, response) => {
     response.json({
         message: "Usuário salvo com sucesso!"
     })
